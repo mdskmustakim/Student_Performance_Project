@@ -1,9 +1,11 @@
 # Early Warning System for Student Academic Performance
 
 ## Student Information
+
 **Name:** MD SK MUSTAKIM  
-**Project Type:** Individual  
-**Domain:** Machine Learning / Smart Campus and Education
+**Department:** Computer Science and Engineering (AI & ML)  
+**Domain:** Machine Learning  
+**College:** Ghani Khan Choudhury Institute of Engineering and Technology (GKCIET)
 
 ## Project Description
 This project uses Machine Learning to identify students who may be at risk of poor academic performance.
