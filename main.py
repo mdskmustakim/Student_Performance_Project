@@ -48,9 +48,15 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 # Three ML models
 models = {
-    "Logistic Regression": LogisticRegression(max_iter=1000),
-    "Decision Tree": DecisionTreeClassifier(random_state=42),
-    "Random Forest": RandomForestClassifier(random_state=42)
+    "Logistic Regression": LogisticRegression(
+        max_iter=1000, class_weight="balanced"
+    ),
+    "Decision Tree": DecisionTreeClassifier(
+        random_state=42, class_weight="balanced"
+    ),
+    "Random Forest": RandomForestClassifier(
+        random_state=42, class_weight="balanced"
+    )
 }
 
 # Train models
@@ -90,10 +96,13 @@ for name, model in models.items():
 import matplotlib.pyplot as plt
 from sklearn.metrics import ConfusionMatrixDisplay
 
-# Train Random Forest
+# Train Logistic Regression
 best_model = Pipeline([
     ("preprocess", preprocess),
-    ("model", RandomForestClassifier(random_state=42))
+    ("model", LogisticRegression(
+        max_iter=1000,
+        class_weight="balanced"
+    ))
 ])
 
 best_model.fit(X_train, y_train)
@@ -109,7 +118,7 @@ ConfusionMatrixDisplay.from_predictions(
     cmap="Blues"
 )
 
-plt.title("Random Forest Confusion Matrix")
+plt.title("Logistic Regression Confusion Matrix")
 plt.tight_layout()
 plt.show()
 
@@ -153,9 +162,92 @@ ConfusionMatrixDisplay.from_predictions(
     cmap="Blues"
 )
 
-plt.title("Random Forest Confusion Matrix")
+plt.title("Logistic Regression Confusion Matrix")
 plt.tight_layout()
 plt.savefig("outputs/confusion_matrix.png")
 plt.close()
 
 print("\nModel and Graph Saved Successfully!")
+
+
+# Exploratory Data Analysis (EDA)
+
+# Student Risk Distribution
+plt.figure(figsize=(7, 5))
+
+data["at_risk"].value_counts().reindex([0, 1]).plot(
+    kind="bar",
+    color=["seagreen", "tomato"]
+)
+
+plt.title("Student Risk Distribution")
+plt.xlabel("Academic Risk")
+plt.ylabel("Number of Students")
+plt.xticks([0, 1], ["Not At Risk", "At Risk"], rotation=0)
+plt.tight_layout()
+plt.savefig("outputs/risk_distribution.png")
+plt.close()
+
+# Final Grade Distribution
+plt.figure(figsize=(8, 5))
+
+plt.hist(
+    data["G3"],
+    bins=21,
+    color="royalblue",
+    edgecolor="black"
+)
+
+plt.axvline(10, color="red", linestyle="--",
+            label="Risk Threshold")
+
+plt.title("Final Grade Distribution")
+plt.xlabel("Final Grade")
+plt.ylabel("Number of Students")
+plt.legend()
+plt.tight_layout()
+plt.savefig("outputs/grade_distribution.png")
+plt.close()
+
+print("\nEDA Graphs Saved Successfully!")
+
+# ML Model Performance Comparison
+
+results = []
+
+for name, model in models.items():
+    pipeline = Pipeline([
+        ("preprocess", preprocess),
+        ("model", model)
+    ])
+
+    pipeline.fit(X_train, y_train)
+    pred = pipeline.predict(X_test)
+
+    results.append({
+        "Model": name,
+        "Accuracy": accuracy_score(y_test, pred),
+        "Precision": precision_score(y_test, pred, zero_division=0),
+        "Recall": recall_score(y_test, pred, zero_division=0),
+        "F1 Score": f1_score(y_test, pred, zero_division=0)
+    })
+
+results_df = pd.DataFrame(results)
+
+results_df.set_index("Model").plot(
+    kind="bar",
+    figsize=(10, 6)
+)
+
+plt.title("ML Model Performance Comparison")
+plt.ylabel("Performance Score")
+plt.ylim(0, 1)
+plt.xticks(rotation=0)
+plt.legend()
+plt.tight_layout()
+plt.savefig("outputs/model_comparison.png")
+plt.close()
+
+results_df.to_csv("outputs/model_results.csv", index=False)
+
+print("\nModel Comparison Graph Saved Successfully!")
